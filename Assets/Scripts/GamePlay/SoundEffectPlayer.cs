@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-using Zenject;
 
 namespace SnakeGame
 {
@@ -27,16 +26,14 @@ namespace SnakeGame
         private AudioSource audioSource;
         [SerializeField]
         private AudioClip[] audioClips;
-        [Inject]
-        private IGridSystem gridSystem;
-        [Inject]
-        private IGameFlowManager gameFlowManager;
 
         void Start()
         {
             masterMixer.SetFloat("Volume", -15);
-            gridSystem.SubscriberCollected.AddListener(PlayCollectingSound);
-            gameFlowManager.GameOver.AddListener(PlayExplodingSound);
+
+            GameFlowEvents.SubscriberCollected.AddListener(PlayCollectingSound);
+            GameFlowEvents.GameOver.AddListener(PlayExplodingSound);
+
             audioSlider.onValueChanged.AddListener(ChangeVolume);
             muteButton.onClick.AddListener(ToggleMuteButton);
         }

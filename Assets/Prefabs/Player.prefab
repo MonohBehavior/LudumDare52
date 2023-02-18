@@ -166,13 +166,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8be713391e2c204ab8ae7ce9865c7ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UnityAnim: {fileID: 56431437}
-  CurrentDirection: 0
+  unityAnim: {fileID: 56431437}
   audioSource: {fileID: 701923389}
-  audioClips:
-  - {fileID: 8300000, guid: ffb159a21c8a04135a5616979c828fab, type: 3}
-  - {fileID: 8300000, guid: 881e3f52c86c94f26a60718d35627cd8, type: 3}
-  - {fileID: 8300000, guid: cabfae866cab347928b74b7d0ca6bfa9, type: 3}
+  waitingSeconds: 0.2
 --- !u!82 &701923389
 AudioSource:
   m_ObjectHideFlags: 0
@@ -183,7 +179,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: adf915007dbaa0f48b69d311f5be9809, type: 2}
-  m_audioClip: {fileID: 8300000, guid: 32d4b1811dda14a6cb9e059ee8ad17d2, type: 3}
+  m_audioClip: {fileID: 8300000, guid: ffb159a21c8a04135a5616979c828fab, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1

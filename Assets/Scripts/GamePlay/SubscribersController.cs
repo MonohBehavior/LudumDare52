@@ -8,41 +8,36 @@ namespace SnakeGame
     public class SubscribersController : MonoBehaviour
     {
         [Inject]
-        private SubscriberController.Factory subscriber;
+        private Subscriber.Factory subscriber;
         [Inject]
-        private IGameFlowManager gameFlow;
-        [Inject]
-        private IGridSystem grid;
+        private IGridManager grid;
         [Inject]
         private IPlayerDataLoader playerData;
-
-        private GameObject subscriberToCollect;
-        private Queue<GameObject> subscriberQueue = new Queue<GameObject>();
-        private Queue<GameObject> subscriberPool = new Queue<GameObject>();
-        private Queue<Int2> subscriberPositionQueue = new Queue<Int2>();
 
         [SerializeField]
         private Transform parent;
         [SerializeField]
         private Text subscribersDisplay;
-        [SerializeField]
-        private StageInfoSO stageInfo;
 
+        private GameObject subscriberToCollect;
         private Int2 subscriberGridPos;
+        private Queue<GameObject> subscriberQueue = new Queue<GameObject>();
+        private Queue<GameObject> subscriberPool = new Queue<GameObject>();
+        private Queue<Int2> subscriberPositionQueue = new Queue<Int2>();
 
         void Start()
         {
-            subscribersDisplay.text = $"{playerData.PlayerData.Subscribers} Subscribers";
+            SetSubscriberDisplay(playerData.PlayerData.Subscribers);
             GenerateNewSubscriber();
 
-            gameFlow.GameReset.AddListener(ResetSubscriber);
-            grid.SubscriberCollected.AddListener(SubscriberFollows);
-            grid.SubscriberNotCollected.AddListener(SubscriberMoves);
+            GameFlowEvents.GameReset.AddListener(ResetSubscriber);
+            GameFlowEvents.SubscriberCollected.AddListener(SubscriberCollected);
+            GameFlowEvents.SubscriberNotCollected.AddListener(SubscriberMoves);
         }
 
         private void OnDestroy()
         {
-            gameFlow.GameReset.RemoveListener(ResetSubscriber);
+            GameFlowEvents.GameReset.RemoveListener(ResetSubscriber);
         }
 
         private void GenerateNewSubscriber()
@@ -62,21 +57,17 @@ namespace SnakeGame
             subscriberToCollect.transform.localScale = Vector3.one * 96;
         }
 
-        private void SubscriberFollows()
+        private void SubscriberCollected()
         {
             SubscriberMoves();
 
             subscriberToCollect.gameObject.GetComponent<Animator>().SetTrigger("Walk");
             subscriberQueue.Enqueue(subscriberToCollect.gameObject);
             subscriberPositionQueue.Enqueue(subscriberGridPos);
-            playerData.PlayerData.Subscribers++;
-            subscribersDisplay.text = $"{playerData.PlayerData.Subscribers} Subscribers";
 
-            if (CheckGoalAchieved())
-            {
-                gameFlow.InvokeGameClear();
-                return;
-            }
+            playerData.PlayerData.Subscribers++;
+
+            SetSubscriberDisplay(playerData.PlayerData.Subscribers);
 
             GenerateNewSubscriber();
         }
@@ -85,11 +76,11 @@ namespace SnakeGame
         {
             if (playerData.PlayerData.Subscribers > 0)
             {
-                foreach (var item in subscriberPositionQueue)
+                foreach (var collectedSubscriber in subscriberPositionQueue)
                 {
-                    if (grid.CheckPlayerColliding(item))
+                    if (grid.CheckIfPlayerOnCoordinate(collectedSubscriber))
                     {
-                        gameFlow.InvokeGameOver();
+                        GameFlowEvents.InvokeGameOver();
                         return;
                     }
                 }
@@ -106,7 +97,7 @@ namespace SnakeGame
         private void ResetSubscriber()
         {
             playerData.PlayerData.Subscribers = 0;
-            subscribersDisplay.text = $"{playerData.PlayerData.Subscribers} Subscribers";
+            SetSubscriberDisplay(playerData.PlayerData.Subscribers);
 
             if (subscriberQueue.Count > 0)
             {
@@ -117,17 +108,15 @@ namespace SnakeGame
                 }
 
                 subscriberQueue.Clear();
-                //subscriberToCollect = subscriberQueue.Dequeue();
-                //subscriberToCollect.SetActive(true);
                 subscriberPositionQueue.Clear();
                 subscriberToCollect.transform.parent = parent;
                 subscriberToCollect.transform.localPosition = grid.InitiateRandomSubscriberPosition(out subscriberGridPos);
             }
         }
 
-        private bool CheckGoalAchieved()
+        private void SetSubscriberDisplay(int number)
         {
-            return playerData.PlayerData.Subscribers >= stageInfo.SubscriberGoal;
+            subscribersDisplay.text = $"{number} Subscribers";
         }
     }
 }

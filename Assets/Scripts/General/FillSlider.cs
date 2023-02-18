@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Zenject;
 
 namespace SnakeGame
 {
@@ -8,19 +7,17 @@ namespace SnakeGame
     {
         [SerializeField]
         private Slider progressSlider;
-        [Inject]
-        private IGameFlowManager gameFlowManager;
 
         void Start()
         {
-            gameFlowManager.GameOver.AddListener(FillFullSlider);
-            gameFlowManager.GameReset.AddListener(EmptySlider);
+            GameFlowEvents.GameOver.AddListener(FillFullSlider);
+            GameFlowEvents.GameReset.AddListener(EmptySlider);
         }
 
         private void OnDestroy()
         {
-            gameFlowManager.GameOver.RemoveListener(FillFullSlider);
-            gameFlowManager.GameOver.RemoveListener(EmptySlider);
+            GameFlowEvents.GameOver.RemoveListener(FillFullSlider);
+            GameFlowEvents.GameReset.RemoveListener(EmptySlider);
         }
 
         private void FillFullSlider()

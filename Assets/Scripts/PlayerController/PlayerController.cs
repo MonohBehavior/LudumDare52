@@ -5,61 +5,54 @@ using Zenject;
 
 namespace SnakeGame
 {
-    public enum WalkingDirection
-    {
-        Up,
-        Down,
-        Right,
-        Left
-    }
-
     public class PlayerController : MonoBehaviour
     {
-        public Animator UnityAnim;
-        public WalkingDirection CurrentDirection;
-        public WaitForSeconds WaitForOneSecond;
-
+        [SerializeField]
+        private Animator unityAnim;
         [SerializeField]
         private AudioSource audioSource;
         [SerializeField]
-        private AudioClip[] audioClips;
-
         private float waitingSeconds = 0.2f;
 
         [Inject]
-        private IGridSystem gridSystem;
-        [Inject]
-        private IGameFlowManager gameFlowManager;
+        private IGridManager gridSystem;
+
+        private WalkingDirection currentDirection = WalkingDirection.Left;
 
         private void Start()
         {
-            CurrentDirection = WalkingDirection.Left;
-            this.transform.localPosition = gridSystem.InitiatePlayerPosition();
+            this.transform.localPosition = gridSystem.InitiatePlayerCoordination();
             StartCoroutine(MoveCharacter());
-            WaitForOneSecond = new WaitForSeconds(waitingSeconds);
-            gameFlowManager.GameReset.AddListener(ResetPlayer);
+
+            GameFlowEvents.GameReset.AddListener(ResetPlayer);
         }
 
         private void OnDestroy()
         {
-            gameFlowManager.GameReset.RemoveListener(ResetPlayer);
+            GameFlowEvents.GameReset.RemoveListener(ResetPlayer);
         }
 
         private void ResetPlayer()
         {
-            this.transform.localPosition = gridSystem.InitiatePlayerPosition();
+            this.transform.localPosition = gridSystem.InitiatePlayerCoordination();
         }
 
         private IEnumerator MoveCharacter()
         {
+            var wait = new WaitForSeconds(waitingSeconds);
+
             while (true)
             {
-                this.transform.localPosition = gridSystem.GetPlayerPosition(CurrentDirection);
-                audioSource.clip = audioClips[0];
-                audioSource.Play();
+                this.transform.localPosition = gridSystem.GetPlayerPosition(currentDirection);
+                PlayCharacterMoveSound();
 
-                yield return WaitForOneSecond;
+                yield return wait;
             }
+        }
+
+        private void PlayCharacterMoveSound()
+        {
+            audioSource.Play();
         }
 
         public void OnMove(InputAction.CallbackContext context)
@@ -70,27 +63,25 @@ namespace SnakeGame
 
                 if (inputValue.x == 0 && inputValue.y == 1)
                 {
-                    CurrentDirection = WalkingDirection.Up;
-                    UnityAnim.SetTrigger("MoveUp");
+                    currentDirection = WalkingDirection.Up;
+                    unityAnim.SetTrigger("MoveUp");
                 }
                 else if (inputValue.x == 0 && inputValue.y == -1)
                 {
-                    CurrentDirection = WalkingDirection.Down;
-                    UnityAnim.SetTrigger("MoveDown");
+                    currentDirection = WalkingDirection.Down;
+                    unityAnim.SetTrigger("MoveDown");
                 }
                 else if (inputValue.x == -1 && inputValue.y == 0)
                 {
-                    CurrentDirection = WalkingDirection.Left;
-                    UnityAnim.SetTrigger("MoveLeft");
+                    currentDirection = WalkingDirection.Left;
+                    unityAnim.SetTrigger("MoveLeft");
                 }
                 else if (inputValue.x == 1 && inputValue.y == 0)
                 {
-                    CurrentDirection = WalkingDirection.Right;
-                    UnityAnim.SetTrigger("MoveRight");
+                    currentDirection = WalkingDirection.Right;
+                    unityAnim.SetTrigger("MoveRight");
                 }
             }
         }
-
-        public class Factory : PlaceholderFactory<PlayerController> { }
     }
 }
